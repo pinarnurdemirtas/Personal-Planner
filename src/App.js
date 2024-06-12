@@ -1,25 +1,54 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import axios from 'axios';
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Login from "./components/Login";
+import Profile from "./components/Profile";
+import Homepage from "./components/Homepage";
+import { UserProvider } from "./components/UserContext";
+import CalendarNote from "./components/CalendarNote";
+import Rutin from "./components/Rutin";
 
-function App() {
+const App = () => {
+  const [validUsers, setValidUsers] = useState([]);
+  
+  const apiUrlValidUsers = 'https://v1.nocodeapi.com/pnurdemirtas/google_sheets/QhQmclkWghpxvaqH?tabId=sayfa1';
+
+
+
+
+  useEffect(() => {
+    const fetchValidUsers = async () => {
+      try {
+        const response = await axios.get(apiUrlValidUsers);
+        console.log('Valid Users API response:', response.data);
+        setValidUsers(response.data.data);
+      } catch (error) {
+        console.error('Error fetching valid users:', error);
+      }
+    };
+
+    
+
+    fetchValidUsers();
+    
+  }, []); 
+console.log(validUsers);
+
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <UserProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Login data={validUsers} />} />
+          <Route path="/homepage" element={<Homepage data={validUsers} />} />
+          <Route path="/profile" element={<Profile data={validUsers} />} />
+  
+          <Route path="/rutin" element={<Rutin />} />
+
+        </Routes>
+      </Router>
+    </UserProvider>
   );
-}
+};
 
 export default App;
