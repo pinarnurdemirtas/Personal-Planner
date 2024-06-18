@@ -1,113 +1,125 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import { Input, Button, List, Card } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import React, { useState, useEffect, useContext } from 'react';
+import { UserContext } from './UserContext';
+import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
+import { Input, Button, List, Card } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 
 const Rutin = () => {
-  const [todos, setTodos] = useState([]);
-  const [inputValue, setInputValue] = useState("");
+  const { user, rutins, setRutins } = useContext(UserContext);
+  const [inputValue, setInputValue] = useState('');
 
-  const apiUrlRutins =
-    "https://v1.nocodeapi.com/pnurdemirtas/google_sheets/QhQmclkWghpxvaqH?tabId=sayfa2";
+  const apiUrlRutins = 'https://v1.nocodeapi.com/pnurdemirtas/google_sheets/QhQmclkWghpxvaqH?tabId=sayfa2';
 
   useEffect(() => {
-    const fetchRutins = async () => {
-      try {
-        const response = await axios.get(apiUrlRutins);
-        setTodos(response.data.data.map((todo, index) => ({ ...todo, id: index + 1 }))); // Her todo elemanına benzersiz bir id atıyoruz
-  
-      } catch (error) {
-        console.error("Error fetching rutins:", error);
-      }
-    };
+    if (user) {
+      const fetchRutins = async () => {
+        try {
+          const response = await axios.get(apiUrlRutins);
+          const filteredRutins = response.data.data
+            .filter((rutin) => rutin.username === user.username)
+            .map((rutin, index) => ({
+              ...rutin,
+              id: index + 1,
+            }));
+          setRutins(filteredRutins);
+          localStorage.setItem(`rutins_${user.username}`, JSON.stringify(filteredRutins));
+        } catch (error) {
+          console.error('Error fetching rutins:', error);
+        }
+      };
 
-    fetchRutins();
-  }, []);
+      const storedRutins = JSON.parse(localStorage.getItem(`rutins_${user.username}`));
+      if (storedRutins) {
+        setRutins(storedRutins);
+      } else {
+        fetchRutins();
+      }
+    }
+  }, [user, setRutins]);
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
   };
 
-  const handleAddTodo = async () => {
-    if (inputValue.trim() !== "") {
-      const newTodo = {
+  const handleAddRutin = async () => {
+    if (inputValue.trim() !== '') {
+      const newId = uuidv4(); // Yeni id'yi hesaplayın
+      const newRutin = {
         rutins: inputValue,
-        completed: null // Yeni eklenen todo varsayılan olarak tamamlanmamış olarak ayarlanır
+        username: user.username,
+        rutinId: newId, // Yeni id'yi burada ekleyin
       };
       try {
-        const response = await axios.post(apiUrlRutins, [Object.values(newTodo)]); // Doğru sütunları kullanarak bir dizi oluştur
-        setTodos([...todos, { ...newTodo, id: response.data.row_id }]);
-        
-        setInputValue("");
-        console.log("Added todo:", response.data);
+        // Yeni rutini eklemek için API'ye istek yapıyoruz
+        const response = await axios.post(apiUrlRutins, [Object.values(newRutin)]);
+  
+        // Yeni rutini updatedRutins array'ine ekliyoruz
+        const updatedRutins = [...rutins, { ...newRutin, id: newId }];
+        setRutins(updatedRutins);
+        setInputValue('');
+        localStorage.setItem(`rutins_${user.username}`, JSON.stringify(updatedRutins));
+        console.log('Added rutin:', response.data, newId);
       } catch (error) {
-        console.error("Error adding todo:", error.response);
+        console.error('Error adding rutin:', error.response);
       }
-    } 
-  }; console.log("eklenenler", todos);
-
+    }
+  };
   
-
-  
-  const handleDeleteTodo = async (id) => {
+  const handleDeleteRutin = async (id) => {
     try {
-      const response = await axios.delete(`${apiUrlRutins}&row_id=${id}`);
-      setTodos(todos.filter(todo => todo.id !== id));
-      console.log("Todo deleted successfully:", response.data);
+      const rutinToDelete = rutins.find((rutin) => rutin.id === id);
+  
+      if (!rutinToDelete) {
+        console.error('Rutin not found');
+        return;
+      }
+  
+      console.log('Deleting rutin with id:', rutinToDelete.id);
+  
+      // Update the state to remove the deleted rutin
+      const updatedRutins = rutins.filter((rutin) => rutin.id !== id);
+      setRutins(updatedRutins);
+  
+      // Update local storage if needed
+      localStorage.setItem(`rutins_${user.username}`, JSON.stringify(updatedRutins));
+  
+      // Simulate API call for feedback (no actual deletion)
+   
+  
     } catch (error) {
-      console.error("Error deleting todo:", error);
+      console.error('Error deleting rutin:', error);
     }
   };
   
   
-  const handleToggleComplete = async (id) => {
-    const todo = todos.find(todo => todo.id === id);
-    const updatedTodo = { ...todo, completed: !todo.completed };
-    
-    try {
-      const response = await axios.put(`${apiUrlRutins}/${id}`, [Object.values(updatedTodo)]);
-      setTodos(todos.map(todo => todo.id === id ? updatedTodo : todo));
-      console.log("Todo completion status updated successfully:", response.data);
-    } catch (error) {
-      console.error("Error toggling todo complete:", error.response);
-    }
-  };
   
 
   return (
     <Card bordered={true} title={<h1>Routines</h1>}>
       <div>
         <Input
-          placeholder="Add new todo"
+          placeholder="Add new rutin"
           value={inputValue}
           onChange={handleInputChange}
-          style={{ width: "300px", marginRight: "10px" }}
+          style={{ width: '300px', marginRight: '10px' }}
         />
-        <Button type="primary" onClick={handleAddTodo} icon={<PlusOutlined />}>
+        <Button type="primary" onClick={handleAddRutin} icon={<PlusOutlined />}>
           Add
         </Button>
         <List
-          style={{ marginTop: "20px", maxWidth: "500px" }}
+          style={{ marginTop: '20px', maxWidth: '500px' }}
           bordered
-          dataSource={todos}
-          renderItem={(todo) => (
+          dataSource={rutins}
+          renderItem={(rutin) => (
             <List.Item
               actions={[
-                <Button
-                  type="primary"
-                  onClick={() => handleToggleComplete(todo.id)}
-                >
-                  {todo.completed ? "Undo" : "Complete"}
-                </Button>,
-                <Button type="danger" onClick={() => handleDeleteTodo(todo.id)}>
+                <Button type="primary" onClick={() => handleDeleteRutin(rutin.id)}>
                   Delete
                 </Button>,
               ]}
-              style={{
-                textDecoration: todo.completed ? "line-through" : "none",
-              }}
             >
-              {todo.rutins}
+              {rutin.rutins}
             </List.Item>
           )}
         />

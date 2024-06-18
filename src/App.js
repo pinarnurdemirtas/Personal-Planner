@@ -4,9 +4,11 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Login from "./components/Login";
 import Profile from "./components/Profile";
 import Homepage from "./components/Homepage";
-import { UserProvider } from "./components/UserContext";
-import CalendarNote from "./components/CalendarNote";
 import Rutin from "./components/Rutin";
+import UserProvider from './components/UserContext';
+
+
+
 
 const App = () => {
   const [validUsers, setValidUsers] = useState([]);
@@ -26,12 +28,9 @@ const App = () => {
         console.error('Error fetching valid users:', error);
       }
     };
-
-    
-
     fetchValidUsers();
-    
   }, []); 
+
 console.log(validUsers);
 
 

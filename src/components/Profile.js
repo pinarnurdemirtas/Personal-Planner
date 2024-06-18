@@ -17,11 +17,11 @@ function Profile({ data }) {
   
     return null;
   };
-  
+ 
   const userInfo = getUserInfo();
   
   if (userInfo) {
-    console.log("qq", userInfo); 
+    console.log("Kullanıcı", userInfo); 
   } else {
     console.log('Kullanıcı bulunamadı.');
   }

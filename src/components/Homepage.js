@@ -9,7 +9,6 @@ import {
 import { Breadcrumb, Layout, Menu, theme } from 'antd';
 import Profile from './Profile';
 import CalendarNote from './CalendarNote';
-import TodoList from './TodoList';
 import Logout from './Logout';
 import Rutin from './Rutin';
 import pp from './pp.png';
