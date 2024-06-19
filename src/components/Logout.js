@@ -13,7 +13,7 @@ function Logout() {
 
   return (
     <div style={{ display: "grid", placeItems: "center", paddingTop: 90 }}>
-      <h2>Çıkış yapmak istediğinize emin misiniz ??</h2>
+      <h2>Are you sure you want to log out?</h2>
       <Button type="primary" onClick={handleLogout}>
         Log Out
       </Button>

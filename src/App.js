@@ -6,7 +6,8 @@ import Profile from "./components/Profile";
 import Homepage from "./components/Homepage";
 import Rutin from "./components/Rutin";
 import UserProvider from './components/UserContext';
-
+import Plan from './components/Plan';
+import Rapor from "./components/Rapor";
 
 
 
@@ -14,9 +15,6 @@ const App = () => {
   const [validUsers, setValidUsers] = useState([]);
   
   const apiUrlValidUsers = 'https://v1.nocodeapi.com/pnurdemirtas/google_sheets/QhQmclkWghpxvaqH?tabId=sayfa1';
-
-
-
 
   useEffect(() => {
     const fetchValidUsers = async () => {
@@ -41,9 +39,10 @@ console.log(validUsers);
           <Route path="/" element={<Login data={validUsers} />} />
           <Route path="/homepage" element={<Homepage data={validUsers} />} />
           <Route path="/profile" element={<Profile data={validUsers} />} />
-  
+          <Route path="/todo" element={<TodoList data={validUsers} />} />
+          <Route path="/plan" element={<Plan data={validUsers} />} />
+          <Route path="/rapor" element={<Rapor data={validUsers} />} />
           <Route path="/rutin" element={<Rutin />} />
-
         </Routes>
       </Router>
     </UserProvider>

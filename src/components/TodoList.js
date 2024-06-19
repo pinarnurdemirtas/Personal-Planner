@@ -12,73 +12,84 @@ const TodoList = () => {
   const [inputValue, setInputValue] = useState("");
   const [selectedDates, setSelectedDates] = useState(null);
 
-  const apiUrlTodos =
-    "https://v1.nocodeapi.com/pnurdemirtas/google_sheets/QhQmclkWghpxvaqH?tabId=sayfa3";
+  const apiUrlTodos = "https://v1.nocodeapi.com/pnurdemirtas/google_sheets/QhQmclkWghpxvaqH?tabId=sayfa3";
 
-    useEffect(() => {
-      const fetchTodos = async () => {
-        try {
-          const response = await axios.get(apiUrlTodos);
+  useEffect(() => {
+    const fetchTodos = async () => {
+      try {
+        const response = await axios.get(apiUrlTodos);
+        if (response.data && response.data.data) {
           const fetchedTodos = response.data.data
-            .filter(todo => todo.username === user.username) // Kullanıcı adı ile filtreleme
+            .filter(todo => todo.username === user.username) // Filter by username
             .map((todo, index) => ({
               ...todo,
-              id: index + 1,
-              rowId: todo.rowId || index + 1  // Ensure rowId is correctly set
+              id: index + 1, // Add unique IDs
+              rowId: todo.rowId || index + 1, // Ensure rowId is set correctly
             }));
           setTodos(fetchedTodos);
           localStorage.setItem(`todos_${user.username}`, JSON.stringify(fetchedTodos));
-        } catch (error) {
-          console.error("Error fetching todos:", error);
+        } else {
+          console.error('API response does not contain expected data format:', response.data);
         }
-      };
-  
-      const storedTodos = JSON.parse(localStorage.getItem(`todos_${user.username}`));
-      if (storedTodos) {
-        setTodos(storedTodos);
-      } else {
-        fetchTodos();
-      }
-    }, [user]);
-    
-    const handleAddTodo = async () => {
-      if (inputValue.trim() !== "" && selectedDates) {
-        const startDate = selectedDates[0].format("YYYY-MM-DD");
-        const endDate = selectedDates[1].format("YYYY-MM-DD");
-    
-        const newTodo = {
-          text: inputValue,
-          username: user.username,
-          startDate: startDate,
-          endDate: endDate,
-          completed: false,
-        };
-    
-        try {
-          const response = await axios.post(apiUrlTodos, [Object.values(newTodo)]);
-          const newRowId = response.data.rowId;  // Assuming the API returns the row ID of the newly created row
-          const updatedTodos = [...todos, { ...newTodo, id: todos.length + 1, rowId: newRowId }];
-          setTodos(updatedTodos);
-          setInputValue("");
-          setSelectedDates(null);
-          localStorage.setItem(`todos_${user.username}`, JSON.stringify(updatedTodos));
-        } catch (error) {
-          console.error("Error adding todo:", error);
-        }
+      } catch (error) {
+        console.error("Error fetching todos:", error);
       }
     };
-    
-    
+
+    const storedTodos = JSON.parse(localStorage.getItem(`todos_${user.username}`));
+    if (storedTodos) {
+      setTodos(storedTodos);
+    } else {
+      fetchTodos();
+    }
+  }, [user, setTodos]);
+
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem(`todos_${user.username}`, JSON.stringify(todos));
+    }
+  }, [todos, user]);
+
+  const handleAddTodo = async () => {
+    if (inputValue.trim() !== "" && selectedDates) {
+      const startDate = selectedDates[0].format("YYYY-MM-DD");
+      const endDate = selectedDates[1].format("YYYY-MM-DD");
+
+      const newTodo = {
+        text: inputValue,
+        username: user.username,
+        startDate: startDate,
+        endDate: endDate,
+        completed: false,
+      };
+
+      try {
+        const response = await axios.post(apiUrlTodos, [Object.values(newTodo)]);
+        const newRowId = response.data.rowId;  // Assuming the API returns the row ID of the newly created row
+        const updatedTodos = [...todos, { ...newTodo, id: todos.length + 1, rowId: newRowId }];
+        setTodos(updatedTodos);
+        setInputValue("");
+        setSelectedDates(null);
+      } catch (error) {
+        console.error("Error adding todo:", error);
+      }
+    }
+  };
+
   const handleDeleteTodo = async (id) => {
     try {
-      // Delete item from API
-      const response = await axios.delete(`${apiUrlTodos}&row_id=${todos.length+1}`);
-      console.log("Todo deleted successfully:", response.data, todos.length+1);
-  
-      // Update local state and localStorage
+      const todoToDelete = todos.find((todo) => todo.id === id);
+      if (!todoToDelete) {
+        console.error('Todo not found');
+        return;
+      }
+
+      // Simulate deletion in API
+      // Replace this with actual API delete call if available
+      // const response = await axios.delete(`${apiUrlTodos}/${todoToDelete.rowId}`);
+
       const updatedTodos = todos.filter(todo => todo.id !== id);
       setTodos(updatedTodos);
-      localStorage.setItem(`todos_${user.username}`, JSON.stringify(updatedTodos));
     } catch (error) {
       console.error("Error deleting todo:", error);
     }
@@ -92,16 +103,12 @@ const TodoList = () => {
     setSelectedDates(dates);
   };
 
-
   const handleToggleComplete = (id) => {
     const updatedTodos = todos.map((todo) =>
       todo.id === id ? { ...todo, completed: !todo.completed } : todo
     );
     setTodos(updatedTodos);
-    localStorage.setItem(`todos_${user.username}`, JSON.stringify(updatedTodos));
   };
-
-  console.log("Todos:", todos);
 
   return (
     <Card bordered={true} title={<h1>To Do List</h1>}>
@@ -147,7 +154,7 @@ const TodoList = () => {
               >
                 {todo.completed ? "Undo" : "Complete"}
               </Button>,
-              <Button type="danger" onClick={() => handleDeleteTodo(todo.id)}>
+              <Button onClick={() => handleDeleteTodo(todo.id)}>
                 Delete
               </Button>,
             ]}

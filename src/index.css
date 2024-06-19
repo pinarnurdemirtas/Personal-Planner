@@ -19,11 +19,13 @@
     overflow: hidden;
   }
   
-  /*.site-calendar-demo-card {
-    max-height: 600px; 
-    max-width: 900px; /* İstediğiniz maksimum yüksekliği ayarlayın *//*
-    overflow-y: auto;  
-    align-items: "center"; /* İçerik taşarsa kaydırma çubuğu ekleyin *//*
+  .ant-select-selector {
+    border: 1px solid #002040 !important; /* Custom border color */
+    border-radius: 4px; /* Optional: for rounded corners */
   }
-  */
+  
+  .custom-select .ant-select-selection-placeholder {
+    color: #888; /* Custom placeholder color */
+  }
+  
   

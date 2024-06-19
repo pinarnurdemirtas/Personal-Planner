@@ -4,14 +4,18 @@ import {
   PieChartOutlined,
   CalendarOutlined,
   UserOutlined,
-  BellOutlined 
+  BellOutlined, 
+  HomeOutlined, 
+  FolderOutlined
 } from '@ant-design/icons';
 import { Breadcrumb, Layout, Menu, theme } from 'antd';
 import Profile from './Profile';
 import CalendarNote from './CalendarNote';
 import Logout from './Logout';
 import Rutin from './Rutin';
-import pp from './pp.png';
+import Plan from './Plan';
+import Rapor from './Rapor';
+import TodoList from './TodoList';
 
 const { Header, Content, Footer, Sider } = Layout;
 function getItem(label, key, icon, children) {
@@ -24,15 +28,17 @@ function getItem(label, key, icon, children) {
 }
 const items = [
   getItem('Profile', '1', <UserOutlined />),
+  getItem('Plan', '6', <HomeOutlined />),
   getItem('To Do List', '2', <FileOutlined />),
-  getItem('Rutinler', '5', <BellOutlined  />),
+  getItem('Routines', '5', <BellOutlined  />),
   getItem('Calendar', '3', <CalendarOutlined />),
+  getItem('Document', '7', <FolderOutlined />),
   getItem('Log Out', '4', <PieChartOutlined />),
+  
   
 ];
 
 const Homepage = ({ data }) => {
-  const [collapsed, setCollapsed] = useState(false);
   const [selectedMenuItem, setSelectedMenuItem] = useState('1'); // Seçili menü öğesini takip edecek bir durum tanımlayın
 
   const handleMenuClick = ({ key }) => {
@@ -54,6 +60,12 @@ const Homepage = ({ data }) => {
         case '5':
         // return <LogoutComponent />; // Eğer bir Logout bileşeni varsa burada gösterebilirsiniz
         return <Rutin/>;
+        case '6':
+        // return <LogoutComponent />; // Eğer bir Logout bileşeni varsa burada gösterebilirsiniz
+        return <Plan/>;
+        case '7':
+        // return <LogoutComponent />; // Eğer bir Logout bileşeni varsa burada gösterebilirsiniz
+        return <Rapor/>;
       default:
         return null;
     }
