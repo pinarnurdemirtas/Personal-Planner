@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useContext } from "react";
 import { UserContext } from "./UserContext";
 import axios from "axios";
-import { Button, List } from "antd";
+import { Button, List, Select } from "antd";
+
+const { Option } = Select;
 
 const Rapor = () => {
   const { user } = useContext(UserContext);
@@ -9,6 +11,9 @@ const Rapor = () => {
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [plan, setPlan] = useState([]);
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedYear, setSelectedYear] = useState('');
+  const [selectedDay, setSelectedDay] = useState('');
 
   const apiUrlRutins = "https://v1.nocodeapi.com/pnurdemirtas/google_sheets/QhQmclkWghpxvaqH?tabId=sayfa2";
   const apiUrlTodos = "https://v1.nocodeapi.com/pnurdemirtas/google_sheets/QhQmclkWghpxvaqH?tabId=sayfa3";
@@ -96,6 +101,40 @@ const Rapor = () => {
     }
   }, [user]);
 
+  const filterPlansAndTodos = (selectedMonth, selectedYear, selectedDay) => {
+    const filteredTodos = todos.filter(todo => {
+      const todoDate = new Date(todo.startDate);
+      return (
+        todoDate.getMonth() === selectedMonth &&
+        todoDate.getFullYear() === selectedYear &&
+        (selectedDay === '' || todoDate.getDate() === selectedDay)
+      );
+    });
+
+    const filteredPlans = plan.filter(plan => {
+      const planDate = new Date(plan.date);
+      return (
+        planDate.getMonth() === selectedMonth &&
+        planDate.getFullYear() === selectedYear &&
+        (selectedDay === '' || planDate.getDate() === selectedDay)
+      );
+    });
+
+    return { filteredTodos, filteredPlans };
+  };
+
+  const handleMonthChange = (value) => {
+    setSelectedMonth(value);
+  };
+
+  const handleYearChange = (value) => {
+    setSelectedYear(value);
+  };
+
+  const handleDayChange = (value) => {
+    setSelectedDay(value);
+  };
+
   const getListData = () => {
     if (!todos.length) return [];
     return todos.map((todo) => ({
@@ -125,6 +164,8 @@ const Rapor = () => {
     }));
   };
 
+  const { filteredTodos, filteredPlans } = filterPlansAndTodos(selectedMonth, selectedYear, selectedDay);
+
   return (
     <div>
       <div style={{ display: "grid", placeItems: "center" }}>
@@ -136,16 +177,62 @@ const Rapor = () => {
           <h4>Send to my e-mail address</h4>
         </Button>
       </div>
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 20, paddingTop:30}}>
+  <Select
+    value={selectedYear}
+    style={{ width: 120, marginRight: 10 }}
+    onChange={handleYearChange}
+    placeholder="Year"
+  >
+    <Option value={''}>Year</Option>
+    <Option value={2022}>2022</Option>
+    <Option value={2023}>2023</Option>
+    <Option value={2024}>2024</Option>
+    {/* Add more years as needed */}
+  </Select>
+  <Select
+    value={selectedMonth}
+    style={{ width: 120, marginRight: 10 }}
+    onChange={handleMonthChange}
+    placeholder="Month"
+  >
+    <Option value={''}>Month</Option>
+    <Option value={0}>January</Option>
+    <Option value={1}>February</Option>
+    <Option value={2}>March</Option>
+    <Option value={3}>April</Option>
+    <Option value={4}>May</Option>
+    <Option value={5}>June</Option>
+    <Option value={6}>July</Option>
+    <Option value={7}>August</Option>
+    <Option value={8}>September</Option>
+    <Option value={9}>October</Option>
+    <Option value={10}>November</Option>
+    <Option value={11}>December</Option>
+  </Select>
+  <Select
+    value={selectedDay}
+    style={{ width: 120 }}
+    onChange={handleDayChange}
+    placeholder="Day"
+  >
+    <Option value={''}>Day</Option>
+    {[...Array(31).keys()].map(day => (
+      <Option key={day + 1} value={day + 1}>{day + 1}</Option>
+    ))}
+  </Select>
+</div>
+
       <div>
         <h3>Plans</h3>
         <List
           style={{ marginTop: "20px" }}
           bordered
-          dataSource={getListData3()}
+          dataSource={filteredPlans}
           renderItem={(plan) => (
             <List.Item actions={[]}>
               <div>
-                <h3>{plan.content}</h3>
+                <h3>{plan.plan}</h3>
                 <p>Date: {plan.date}</p>
                 <p>Time: {plan.time}</p>
               </div>
@@ -159,7 +246,7 @@ const Rapor = () => {
         <List
           style={{ marginTop: "20px" }}
           bordered
-          dataSource={getListData()}
+          dataSource={filteredTodos}
           renderItem={(todo) => (
             <List.Item actions={[]} style={{ textDecoration: todo.completed ? "line-through" : "none" }}>
               <div>
@@ -189,8 +276,6 @@ const Rapor = () => {
           )}
         />
       </div>
-
-    
     </div>
   );
 };
