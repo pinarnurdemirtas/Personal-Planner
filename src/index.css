@@ -19,7 +19,7 @@
     overflow: hidden;
   }
   
-  .ant-select-selector {
+  .g .ant-select-selector {
     border: 1px solid #002040 !important; /* Custom border color */
     border-radius: 4px; /* Optional: for rounded corners */
   }

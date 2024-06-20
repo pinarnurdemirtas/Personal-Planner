@@ -28,7 +28,7 @@ function Profile({ data }) {
  
 
   if (!user) {
-    alert("oturum");
+    navigate("/");
   }
 
   return (
@@ -48,18 +48,28 @@ function Profile({ data }) {
                 />
               </Col>
               <Col span={16}>
-                <h2 style={{ paddingTop: 20}} >{userInfo.name} kişisinin profili</h2>
+                <h2 style={{ paddingTop: 20}} >{userInfo.name}'s  Profile</h2>
               </Col>
             </Row>
           </div>
         }
       >
         <div>
-          <p>Username: {userInfo.username}</p>
-          <p>Name: {userInfo.name}</p>
-          <p>Surname: {userInfo.surname}</p>
-          <p>E-mail: {userInfo.mail}</p>
-          <p>Telephone: {userInfo.tel}</p>
+        <p>
+      <span style={{ fontWeight: "bold" }}>Username: </span> {userInfo.username}
+    </p>
+    <p>
+      <span style={{ fontWeight: "bold" }}>Name: </span> {userInfo.name}
+    </p>
+    <p>
+      <span style={{ fontWeight: "bold" }}>Surname: </span> {userInfo.surname}
+    </p>
+    <p>
+      <span style={{ fontWeight: "bold" }}>E-mail: </span> {userInfo.mail}
+    </p>
+    <p>
+      <span style={{ fontWeight: "bold" }}>Telephone: </span> {userInfo.tel}
+    </p>
         </div>
       </Card>
     </div>

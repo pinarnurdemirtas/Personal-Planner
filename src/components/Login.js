@@ -335,7 +335,7 @@ function Login({ data }) {
                           },
                         ]}
                       >
-                        <Select placeholder="Gender">
+                        <Select placeholder="Gender" className="g">
                           <Option value="https://api.dicebear.com/8.x/adventurer/svg?seed=Cookie&flip=true">
                             Female
                           </Option>

@@ -110,6 +110,8 @@ const Rapor = () => {
     return rutins.map((rutin) => ({
       type: "info",
       content: rutin.rutins,
+      day: rutin.day,
+      time: rutin.time
     }));
   };
 
@@ -134,7 +136,24 @@ const Rapor = () => {
           <h4>Send to my e-mail address</h4>
         </Button>
       </div>
-
+      <div>
+        <h3>Plans</h3>
+        <List
+          style={{ marginTop: "20px" }}
+          bordered
+          dataSource={getListData3()}
+          renderItem={(plan) => (
+            <List.Item actions={[]}>
+              <div>
+                <h3>{plan.content}</h3>
+                <p>Date: {plan.date}</p>
+                <p>Time: {plan.time}</p>
+              </div>
+            </List.Item>
+          )}
+        />
+      </div>
+      
       <div>
         <h3>To Do List</h3>
         <List
@@ -163,29 +182,15 @@ const Rapor = () => {
             <List.Item actions={[]}>
               <div>
                 <h3>{rutin.content}</h3>
+                <h5>{rutin.day}</h5>
+                <p>{rutin.time}</p>
               </div>
             </List.Item>
           )}
         />
       </div>
 
-      <div>
-        <h3>Plans</h3>
-        <List
-          style={{ marginTop: "20px" }}
-          bordered
-          dataSource={getListData3()}
-          renderItem={(plan) => (
-            <List.Item actions={[]}>
-              <div>
-                <h3>{plan.content}</h3>
-                <p>Date: {plan.date}</p>
-                <p>Time: {plan.time}</p>
-              </div>
-            </List.Item>
-          )}
-        />
-      </div>
+    
     </div>
   );
 };

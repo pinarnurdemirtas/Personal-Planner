@@ -112,15 +112,15 @@ const TodoList = () => {
 
   return (
     <Card bordered={true} title={<h1>To Do List</h1>}>
-      <Row gutter={[16, 16]}>
-        <Col span={8}>
+      <Row gutter={[15]}>
+        <Col span={5}>
           <Input
             placeholder="Add new todo"
             value={inputValue}
             onChange={handleInputChange}
           />
         </Col>
-        <Col span={8}>
+        <Col span={5}>
           <Space direction="vertical">
             <RangePicker
               onChange={handleDateChange}
@@ -129,7 +129,7 @@ const TodoList = () => {
             />
           </Space>
         </Col>
-        <Col span={8}>
+        <Col span={5}>
           <Button
             type="primary"
             onClick={handleAddTodo}
