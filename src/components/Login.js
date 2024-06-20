@@ -51,9 +51,9 @@ function Login({ data }) {
 
   const register = async (values) => {
     const user = {
-      usernamee: values.username,
-      passwordd: values.password,
-      name: inputValue,
+      username: values.username,
+      password: values.password,
+      name: values.name,
       surname: values.surname,
       mail: values.mail,
       tel: values.tel,
@@ -237,7 +237,7 @@ function Login({ data }) {
                   <Row gutter={16}>
                     <Col span={12}>
                       <Form.Item
-                        value={inputValue}
+      
                         name="name"
                         rules={[
                           {
@@ -291,7 +291,7 @@ function Login({ data }) {
                     </Col>
                     <Col span={12}>
                       <Form.Item
-                        name="usernamee"
+                        name="username"
                         rules={[
                           {
                             required: true,
@@ -310,7 +310,7 @@ function Login({ data }) {
                   <Row gutter={16}>
                     <Col span={12}>
                       <Form.Item
-                        name="passwordd"
+                        name="password"
                         rules={[
                           {
                             required: true,
