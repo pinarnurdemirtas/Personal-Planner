@@ -13,11 +13,11 @@ import {
   Input,
   Checkbox,
   Button,
-  Alert,
   Row,
   Col,
   Select,
   Layout,
+  message,
 } from "antd";
 import { useNavigate } from "react-router-dom";
 
@@ -25,10 +25,8 @@ function Login({ data }) {
   const { Option } = Select;
   const { Header } = Layout;
 
-  const [alertVisible, setAlertVisible] = useState(false);
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
-  const [inputValue, setInputValue] = useState("");
   const { setUser } = useContext(UserContext);
 
   const onFinish = (values) => {
@@ -41,7 +39,7 @@ function Login({ data }) {
       setUser(values);
       navigate("/homepage");
     } else {
-      setAlertVisible(true);
+      message.error('Incorrect password or username');
     }
   };
 
@@ -193,15 +191,8 @@ function Login({ data }) {
                     </Button>
                   </Form.Item>
                 </Form>
-                {alertVisible && (
-                  <Alert
-                    message={<h5>Warning!</h5>}
-                    description={
-                      <p>Please input your correct username and password!</p>
-                    }
-                    style={{ marginTop: 16 }}
-                  />
-                )}
+                
+              
               </Card>
             </div>
           </Col>
