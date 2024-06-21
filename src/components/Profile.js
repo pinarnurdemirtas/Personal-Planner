@@ -186,7 +186,7 @@ function Profile({ data }) {
               <span style={{ fontWeight: "bold" }}>E-mail: </span>
               {userInfo.mail}
             </p>
-            <p>
+            <p style={{paddingBottom:12}}>
               <span style={{ fontWeight: "bold" }}>Telephone: </span>
               {userInfo.tel}
             </p>
