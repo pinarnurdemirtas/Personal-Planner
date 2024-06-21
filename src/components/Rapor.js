@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { UserContext } from "./UserContext";
 import axios from "axios";
-import { Button, List, Select } from "antd";
+import { Button, List, Select, message } from "antd";
 
 const { Option } = Select;
 
@@ -172,7 +172,7 @@ const Rapor = () => {
         <Button
           style={{ height: 50, width: 250 }}
           type="primary"
-          onClick={() => alert("It has been successfully sent to your e-mail address.")}
+          onClick={() => message.success("It has been successfully sent to your e-mail address.")}
         >
           <h4>Send to my e-mail address</h4>
         </Button>
@@ -182,7 +182,7 @@ const Rapor = () => {
     value={selectedYear}
     style={{ width: 120, marginRight: 10 }}
     onChange={handleYearChange}
-    placeholder="Year"
+    className="g"
   >
     <Option value={''}>Year</Option>
     <Option value={2022}>2022</Option>
@@ -194,7 +194,7 @@ const Rapor = () => {
     value={selectedMonth}
     style={{ width: 120, marginRight: 10 }}
     onChange={handleMonthChange}
-    placeholder="Month"
+    className="g"
   >
     <Option value={''}>Month</Option>
     <Option value={0}>January</Option>
@@ -214,7 +214,7 @@ const Rapor = () => {
     value={selectedDay}
     style={{ width: 120 }}
     onChange={handleDayChange}
-    placeholder="Day"
+    className="g"
   >
     <Option value={''}>Day</Option>
     {[...Array(31).keys()].map(day => (

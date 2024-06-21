@@ -107,6 +107,10 @@ function Profile({ data }) {
     setIsEditing(true);
   };
 
+  const noEdit = () => {
+    setIsEditing(false);
+  };
+
   if (!userInfo) {
     return <div>Loading...</div>;
   }
@@ -155,9 +159,14 @@ function Profile({ data }) {
               <span style={{ fontWeight: "bold" }}>Telephone: </span>
               <Input name="tel" value={formData.tel} onChange={handleChange} />
             </p>
-            <Button type="primary" onClick={handleSave}>
-              Save
-            </Button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+      <Button type="primary" onClick={handleSave}>
+        Save
+      </Button>
+      <Button  onClick={noEdit}>
+        Cancel
+      </Button>
+    </div>
           </div>
         ) : (
           <div>
