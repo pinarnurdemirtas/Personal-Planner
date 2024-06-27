@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Login from "./components/Login";
-import Profile from "./components/Profile";
-import Homepage from "./components/Homepage";
-import Rutin from "./components/Rutin";
 import UserProvider from './components/UserContext';
+import Login from "./components/Login";
+import Homepage from "./components/Homepage";
+import Profile from "./components/Profile";
 import Plan from './components/Plan';
-import Rapor from "./components/Rapor";
 import TodoList from './components/TodoList';
+import Rutin from "./components/Rutin";
+import Rapor from "./components/Rapor";
+import Logout from "./components/Logout";
 
 
 
@@ -38,16 +39,17 @@ console.log(validUsers);
       <Router>
         <Routes>
           <Route path="/" element={<Login data={validUsers} />} />
-          <Route path="/homepage" element={<Homepage data={validUsers} />} />
-          <Route path="/profile" element={<Profile data={validUsers} />} />
-          <Route path="/todo" element={<TodoList data={validUsers} />} />
-          <Route path="/plan" element={<Plan data={validUsers} />} />
-          <Route path="/rapor" element={<Rapor data={validUsers} />} />
-          <Route path="/rutin" element={<Rutin />} />
+          <Route path="/homepage" element={<Homepage data={validUsers}/>} />
+          <Route path="/Profile" element={<Profile data={validUsers}/>} />
+          <Route path="/Plan" element={<Plan data={validUsers}/>} />
+          <Route path="/TodoList" element={<TodoList data={validUsers}/>} />
+          <Route path="/Rutin" element={<Rutin data={validUsers}/>} />
+          <Route path="/Rapor" element={<Rapor data={validUsers}/>} />
+          <Route path="/Logout" element={<Logout data={validUsers}/>} />
         </Routes>
       </Router>
-    </UserProvider>
-  );
+    </UserProvider> //Kullanıcı bilgilerini tüm bileşenlere verir
+  ); 
 };
 
 export default App;

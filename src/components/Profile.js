@@ -7,19 +7,20 @@ function Profile({ data }) {
   const navigate = useNavigate();
   const { user } = useContext(UserContext);
 
-  const [userInfo, setUserInfo] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const [userInfo, setUserInfo] = useState(null); // Kullanıcı bilgilerini saklamak için state
+  const [isEditing, setIsEditing] = useState(false); // Profil düzenlemelerini saklamak için state
   const [formData, setFormData] = useState({
+    // Form verilerini saklamak için state
     username: "",
     name: "",
     surname: "",
     mail: "",
     tel: "",
     img: "",
-    id: "" // Include id in formData if needed
   });
 
   useEffect(() => {
+    // Kullanıcı bulunamadıysa ana sayfaya yönlendir
     if (!user) {
       navigate("/");
       return;
@@ -28,15 +29,19 @@ function Profile({ data }) {
     const getUserInfo = () => {
       for (const userData of data) {
         if (userData.username === user.username) {
+          //Giriş yapan kullanıcıyı bulma
           return userData;
         }
       }
       return null;
     };
 
+    // Kullanıcı bilgilerini çek ve state'i güncelle
     const fetchedUserInfo = getUserInfo();
     if (fetchedUserInfo) {
       setUserInfo(fetchedUserInfo);
+
+      // Form verilerini doldur
       setFormData({
         username: fetchedUserInfo.username,
         name: fetchedUserInfo.name,
@@ -44,73 +49,81 @@ function Profile({ data }) {
         mail: fetchedUserInfo.mail,
         tel: fetchedUserInfo.tel,
         img: fetchedUserInfo.img,
-        id: fetchedUserInfo.row_id // Ensure the correct field name is used
+        id: fetchedUserInfo.row_id, // Doğru alan adını kullanın
       });
     }
   }, [data, user, navigate]);
 
   useEffect(() => {
+    // userInfo değiştiğinde
     if (userInfo) {
-      console.log("User Info:", userInfo); // Log userInfo to check the structure
+      console.log("User Info:", userInfo);
     }
   }, [userInfo]);
 
+  // form elemanında herhangi bir değer değiştiğinde çalışacak
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevFormData) => ({
       ...prevFormData,
-      [name]: value
+      [name]: value,
     }));
   };
 
+  // Profil güncelleme işlemini gerçekleştiren handleSave fonksiyonu
   const handleSave = async () => {
     try {
+      // ID (row_id) yoksa hata ver
       if (!formData.id) {
         throw new Error("User ID (row_id) is required.");
       }
-  
+
       const apiUrl = `https://v1.nocodeapi.com/pnurdemirtas/google_sheets/QhQmclkWghpxvaqH?tabId=sayfa1`;
-      console.log("Sending request to:", apiUrl);
-      console.log("Form data:", JSON.stringify(formData));
-  
+
+      // İstek gönderimi için gerekli bilgileri oluşturma
       const requestBody = {
         row_id: formData.id,
         name: formData.name,
-        email: formData.mail
-        // Add other fields as needed for your API
+        email: formData.mail,
       };
-  
+
+      // API'ye PUT isteği gönderme
       const response = await fetch(apiUrl, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       });
-  
+
+      // Başarılı değilse hata ver
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Failed to update profile: ${errorText}`);
       }
-  
+
+      // Güncellenmiş kullanıcı bilgisini state'e kaydet ve düzenleme modunu kapat
       const updatedUser = await response.json();
       setUserInfo(updatedUser);
       setIsEditing(false);
-      window.location.reload();
     } catch (error) {
-      console.error("Error updating profile:", error);
-      message.error(`An error occurred while updating the profile: ${error.message}`);
+      message.error(
+        `An error occurred while updating the profile: ${error.message}`
+      );
     }
   };
-  
+
+  // Düzenleme modunu açan handleEdit
   const handleEdit = () => {
     setIsEditing(true);
   };
 
+  // Düzenleme modunu kapatan noEdit
   const noEdit = () => {
     setIsEditing(false);
   };
 
+  // Kullanıcı bilgisi yüklenmediyse
   if (!userInfo) {
     return <div>Loading...</div>;
   }
@@ -127,68 +140,83 @@ function Profile({ data }) {
                 <img
                   style={{ paddingRight: 30, paddingTop: 10 }}
                   alt="example"
-                  src={userInfo.img}
+                  src={formData.img}
                 />
               </Col>
               <Col span={16}>
-                <h2 style={{ paddingTop: 20 }}>{userInfo.name}'s Profile</h2>
+                <h2 style={{ paddingTop: 20 }}>{formData.name}'s Profile</h2>
               </Col>
             </Row>
           </div>
         }
       >
-        {isEditing ? (
+        {isEditing ? ( // Düzenleme modunda ise düzenleme formunu ve save butonunu göster
           <div>
             <p>
               <span style={{ fontWeight: "bold" }}>Username: </span>
-              <Input name="username" value={formData.username} onChange={handleChange} />
+              <Input
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+              />
             </p>
             <p>
               <span style={{ fontWeight: "bold" }}>Name: </span>
-              <Input name="name" value={formData.name} onChange={handleChange} />
+              <Input
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+              />
             </p>
             <p>
               <span style={{ fontWeight: "bold" }}>Surname: </span>
-              <Input name="surname" value={formData.surname} onChange={handleChange} />
+              <Input
+                name="surname"
+                value={formData.surname}
+                onChange={handleChange}
+              />
             </p>
             <p>
               <span style={{ fontWeight: "bold" }}>E-mail: </span>
-              <Input name="mail" value={formData.mail} onChange={handleChange} />
+              <Input
+                name="mail"
+                value={formData.mail}
+                onChange={handleChange}
+              />
             </p>
             <p>
               <span style={{ fontWeight: "bold" }}>Telephone: </span>
               <Input name="tel" value={formData.tel} onChange={handleChange} />
             </p>
-            <div style={{ display: 'flex', gap: '10px' }}>
-      <Button type="primary" onClick={handleSave}>
-        Save
-      </Button>
-      <Button  onClick={noEdit}>
-        Cancel
-      </Button>
-    </div>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <Button type="primary" onClick={handleSave}>
+                Save
+              </Button>
+              <Button onClick={noEdit}>Cancel</Button>
+            </div>
           </div>
         ) : (
+          // Düzenleme modunda değilse profil bilgilerini göster ve düzenleme butonunu göster
           <div>
             <p>
               <span style={{ fontWeight: "bold" }}>Username: </span>
-              {userInfo.username}
+              {formData.username}
             </p>
             <p>
               <span style={{ fontWeight: "bold" }}>Name: </span>
-              {userInfo.name}
+              {formData.name}
             </p>
             <p>
               <span style={{ fontWeight: "bold" }}>Surname: </span>
-              {userInfo.surname}
+              {formData.surname}
             </p>
             <p>
               <span style={{ fontWeight: "bold" }}>E-mail: </span>
-              {userInfo.mail}
+              {formData.mail}
             </p>
-            <p style={{paddingBottom:12}}>
+            <p>
               <span style={{ fontWeight: "bold" }}>Telephone: </span>
-              {userInfo.tel}
+              {formData.tel}
             </p>
             <Button type="primary" onClick={handleEdit}>
               Edit Profile

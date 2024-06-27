@@ -1,117 +1,151 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { UserContext } from './UserContext';
+import React, { useState, useEffect, useContext, useCallback } from "react";
+import { UserContext } from "./UserContext";
 import axios from "axios";
 import { Input, Button, List, Row, Col, Card, DatePicker, Space } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
-import moment from "moment";
+import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
 
 const { RangePicker } = DatePicker;
 
 const TodoList = () => {
+  // Kullanıcı bilgilerini ve todos state'ini UserContext'ten al
   const { user, todos, setTodos } = useContext(UserContext);
-  const [inputValue, setInputValue] = useState("");
-  const [selectedDates, setSelectedDates] = useState(null);
 
-  const apiUrlTodos = "https://v1.nocodeapi.com/pnurdemirtas/google_sheets/QhQmclkWghpxvaqH?tabId=sayfa3";
+  const [inputValue, setInputValue] = useState(""); // Yeni todo girişi
+  const [selectedDates, setSelectedDates] = useState(null); // Seçilen tarih aralığı
+  const [loading, setLoading] = useState(false); // Veri yüklenirken durum
 
-  useEffect(() => {
-    const fetchTodos = async () => {
-      try {
-        const response = await axios.get(apiUrlTodos);
-        if (response.data && response.data.data) {
-          const fetchedTodos = response.data.data
-            .filter(todo => todo.username === user.username) // Filter by username
-            .map((todo, index) => ({
-              ...todo,
-              id: index + 1, // Add unique IDs
-              rowId: todo.rowId || index + 1, // Ensure rowId is set correctly
-            }));
-          setTodos(fetchedTodos);
-          localStorage.setItem(`todos_${user.username}`, JSON.stringify(fetchedTodos));
-        } else {
-          console.error('API response does not contain expected data format:', response.data);
-        }
-      } catch (error) {
-        console.error("Error fetching todos:", error);
-      }
-    };
+  const apiUrlTodos =
+    "https://v1.nocodeapi.com/pnurdemirtas/google_sheets/QhQmclkWghpxvaqH?tabId=sayfa3";
 
-    const storedTodos = JSON.parse(localStorage.getItem(`todos_${user.username}`));
-    if (storedTodos) {
-      setTodos(storedTodos);
-    } else {
-      fetchTodos();
+  // Todo'ları getiren fonksiyon
+  const fetchTodos = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(apiUrlTodos); // Todos'ları API'den getir
+      const data = response.data.data; // API'den gelen veri
+      const filteredTodos = data
+        .filter((todo) => todo.username === user.username) // Sadece kullanıcıya ait olanları filtrele
+        .map((todo, index) => ({
+          ...todo,
+          id: index + 1,
+        })); // Her todo'ya benzersiz bir ID ata
+      setTodos(filteredTodos); // Todos state'ini güncelle
+      localStorage.setItem(
+        `todos_${user.username}`,
+        JSON.stringify(filteredTodos)
+      ); // Local storage'a todos'ları kaydet
+    } catch (error) {
+      console.error("Error fetching todos:", error);
+    } finally {
+      setLoading(false);
     }
-  }, [user, setTodos]);
+  }, [apiUrlTodos, user.username, setTodos]);
 
+  // Component ilk render olduğunda ve user değiştiğinde fetchTodos fonksiyonunu çalıştır
   useEffect(() => {
     if (user) {
-      localStorage.setItem(`todos_${user.username}`, JSON.stringify(todos));
+      const storedTodos = JSON.parse(
+        localStorage.getItem(`todos_${user.username}`)
+      ); // Local storage'dan todos'ları getir
+      if (storedTodos) {
+        fetchTodos();
+        setTodos(storedTodos);
+      } else {
+        fetchTodos();
+      }
     }
-  }, [todos, user]);
+  }, [user, setTodos, fetchTodos]);
 
+  // Yeni todo ekleme fonksiyonu
   const handleAddTodo = async () => {
     if (inputValue.trim() !== "" && selectedDates) {
-      const startDate = selectedDates[0].format("YYYY-MM-DD");
-      const endDate = selectedDates[1].format("YYYY-MM-DD");
+      const startDate = selectedDates[0].format("YYYY-MM-DD"); // Seçilen tarih aralığının başlangıç tarihi
+      const endDate = selectedDates[1].format("YYYY-MM-DD"); // Seçilen tarih aralığının bitiş tarihi
 
       const newTodo = {
         text: inputValue,
         username: user.username,
         startDate: startDate,
         endDate: endDate,
-        completed: false,
-      };
+      }; // Yeni todo objesi
 
       try {
-        const response = await axios.post(apiUrlTodos, [Object.values(newTodo)]);
-        const newRowId = response.data.rowId;  // Assuming the API returns the row ID of the newly created row
-        const updatedTodos = [...todos, { ...newTodo, id: todos.length + 1, rowId: newRowId }];
-        setTodos(updatedTodos);
-        setInputValue("");
-        setSelectedDates(null);
+        const myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+
+        const requestOptions = {
+          method: "POST",
+          headers: myHeaders,
+          redirect: "follow",
+          body: JSON.stringify([Object.values(newTodo)]), // Yeni todo'yu diziye çevirir
+        };
+
+        const response = await fetch(apiUrlTodos, requestOptions); // API'ye POST gönder
+        const data = await response.json(); // API'den dönen JSON verisi
+
+        const newRowId = data.rowId; // Yeni oluşturulan todo'nun satır ID'si
+        const updatedTodos = [
+          ...todos,
+          { ...newTodo, id: todos.length + 1, rowId: newRowId }, // todos dizisine yeni todo ekle
+        ];
+        setTodos(updatedTodos); // Todos state'ini güncelle
+        setInputValue(""); // Input değerini temizle
+        setSelectedDates(null); // Seçilen tarih aralığını temizle
+        localStorage.setItem(
+          `todos_${user.username}`,
+          JSON.stringify(updatedTodos)
+        ); // Local storage'a güncellenmiş todos'ları kaydet
       } catch (error) {
-        console.error("Error adding todo:", error);
+        console.error("Error adding todo:", error); // Hata durumunda konsola hata yazdır
       }
     }
   };
 
+  // Todo silme fonksiyonu
   const handleDeleteTodo = async (id) => {
     try {
-      const todoToDelete = todos.find((todo) => todo.id === id);
+      const todoToDelete = todos.find((todo) => todo.id === id); // Silinecek todo'yu bul
+
       if (!todoToDelete) {
-        console.error('Todo not found');
+        console.error("Todo not found"); // Eğer todo bulunamazsa hata yazdır
         return;
       }
 
-      // Simulate deletion in API
-      // Replace this with actual API delete call if available
-      // const response = await axios.delete(`${apiUrlTodos}/${todoToDelete.rowId}`);
+      axios
+        .delete(apiUrlTodos, {
+          params: {
+            row_id: todoToDelete.row_id,
+          },
+        })
+        .then((response) => {
+          console.log("Successful deletion:", response); // Silme işlemi başarılı ise konsola yazdır
 
-      const updatedTodos = todos.filter(todo => todo.id !== id);
-      setTodos(updatedTodos);
+          // Silinen todo hariç diğer todos'ları güncelle
+          const updatedTodo = todos.filter((todo) => todo.id !== id);
+          setTodos(updatedTodo);
+
+          localStorage.setItem(
+            `todos_${user.username}`,
+            JSON.stringify(updatedTodo)
+          ); // Local storage'a güncellenmiş todos'ları kaydet
+        });
     } catch (error) {
       console.error("Error deleting todo:", error);
     }
   };
 
+  // Input değeri değiştiğinde çağrılan fonksiyon
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
   };
 
+  // Tarih aralığı değiştiğinde çağrılan fonksiyon
   const handleDateChange = (dates) => {
     setSelectedDates(dates);
   };
 
-  const handleToggleComplete = (id) => {
-    const updatedTodos = todos.map((todo) =>
-      todo.id === id ? { ...todo, completed: !todo.completed } : todo
-    );
-    setTodos(updatedTodos);
-  };
-
   return (
-    <Card bordered={true} title={<h1>To Do List</h1>}>
+    <Card bordered={true} title={<h1>To Do List</h1>} loading={loading}>
       <Row gutter={[15]}>
         <Col span={5}>
           <Input
@@ -150,17 +184,12 @@ const TodoList = () => {
             actions={[
               <Button
                 type="primary"
-                onClick={() => handleToggleComplete(todo.id)}
+                onClick={() => handleDeleteTodo(todo.id)}
+                icon={<DeleteOutlined />}
               >
-                {todo.completed ? "Undo" : "Complete"}
-              </Button>,
-              <Button onClick={() => handleDeleteTodo(todo.id)}>
                 Delete
               </Button>,
             ]}
-            style={{
-              textDecoration: todo.completed ? "line-through" : "none",
-            }}
           >
             <div>
               <h3>{todo.text}</h3>

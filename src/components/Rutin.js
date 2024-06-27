@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useContext } from "react";
 import { UserContext } from "./UserContext";
-import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
-import { Input, Button, List, Card, Select, TimePicker, Row, Col } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { Input, Button, List, Card, Select, TimePicker } from "antd";
+import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
+import axios from "axios";
 
 const Rutin = () => {
   const { user, rutins, setRutins } = useContext(UserContext);
@@ -17,14 +17,28 @@ const Rutin = () => {
   useEffect(() => {
     if (user) {
       const fetchRutins = async () => {
+        var myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+
+        var requestOptions = {
+          method: "GET",
+          headers: myHeaders,
+          redirect: "follow",
+        };
+
         try {
-          const response = await axios.get(apiUrlRutins);
-          const filteredRutins = response.data.data
+          const response = await fetch(apiUrlRutins, requestOptions);
+          const result = await response.text();
+          console.log("Fetched data:", result); // Log fetched data
+
+          const data = JSON.parse(result);
+          const filteredRutins = data.data
             .filter((rutin) => rutin.username === user.username)
             .map((rutin, index) => ({
               ...rutin,
               id: index + 1,
             }));
+          console.log("Filtered rutins:", filteredRutins); // Log filtered rutins
           setRutins(filteredRutins);
           localStorage.setItem(
             `rutins_${user.username}`,
@@ -39,6 +53,7 @@ const Rutin = () => {
         localStorage.getItem(`rutins_${user.username}`)
       );
       if (storedRutins) {
+        fetchRutins();
         setRutins(storedRutins);
       } else {
         fetchRutins();
@@ -60,11 +75,21 @@ const Rutin = () => {
         username: user.username,
         rutinID: newId,
       };
+
+      var myHeaders = new Headers();
+      myHeaders.append("Content-Type", "application/json");
+
+      var requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        body: JSON.stringify([Object.values(newRutin)]),
+        redirect: "follow",
+      };
+
       try {
-        // Yeni rutini eklemek için API'ye istek yapıyoruz
-        const response = await axios.post(apiUrlRutins, [
-          Object.values(newRutin),
-        ]);
+        const response = await fetch(apiUrlRutins, requestOptions);
+        const result = await response.json();
+        console.log("Add rutin response:", result); // Log add rutin response
 
         // Yeni rutini updatedRutins array'ine ekliyoruz
         const updatedRutins = [...rutins, { ...newRutin, id: newId }];
@@ -76,10 +101,12 @@ const Rutin = () => {
           `rutins_${user.username}`,
           JSON.stringify(updatedRutins)
         );
-        console.log("Added rutin:", response.data, newId);
+        console.log("Updated rutins:", updatedRutins); // Log updated rutins
       } catch (error) {
-        console.error("Error adding rutin:", error.response);
+        console.error("Error adding rutin:", error);
       }
+    } else {
+      console.log("Please fill all the fields."); // Log if fields are not filled
     }
   };
 
@@ -92,19 +119,32 @@ const Rutin = () => {
         return;
       }
 
-      console.log("Deleting rutin with id:", rutinToDelete.id);
+      console.log("Rutin to delete:", rutinToDelete); // Log the rutin to delete
 
-      // Update the state to remove the deleted rutin
-      const updatedRutins = rutins.filter((rutin) => rutin.id !== id);
-      setRutins(updatedRutins);
+      axios
+        .delete(apiUrlRutins, {
+          params: {
+            row_id: rutinToDelete.row_id,
+          },
+        })
+        .then((response) => {
+          console.log("Silme işlemi başarılı:", response);
 
-      // Update local storage if needed
-      localStorage.setItem(
-        `rutins_${user.username}`,
-        JSON.stringify(updatedRutins)
-      );
+          // Update the state to remove the deleted rutin
+          const updatedRutins = rutins.filter((rutin) => rutin.id !== id);
+          setRutins(updatedRutins);
 
-      // Simulate API call for feedback (no actual deletion)
+          // Update local storage if needed
+          localStorage.setItem(
+            `rutins_${user.username}`,
+            JSON.stringify(updatedRutins)
+          );
+
+          console.log("Updated rutins after deletion:", updatedRutins); // Log updated rutins after deletion
+        })
+        .catch((error) => {
+          console.error("Silme işlemi sırasında hata oluştu:", error);
+        });
     } catch (error) {
       console.error("Error deleting rutin:", error);
     }
@@ -140,11 +180,16 @@ const Rutin = () => {
           onChange={(time) => setSelectedTime(time)}
           style={{ marginRight: "10px" }}
         />
-        <Button type="primary" onClick={handleAddRutin} icon={<PlusOutlined />}>
+        <Button
+          type="primary"
+          onClick={handleAddRutin}
+          icon={<PlusOutlined />}
+          disabled={!inputValue || !selectedDay || !selectedDay}
+        >
           Add
         </Button>
         <List
-          style={{ marginTop: "20px", width:1100}}
+          style={{ marginTop: "20px", width: 1100 }}
           bordered
           dataSource={rutins}
           renderItem={(rutin) => (
@@ -153,19 +198,17 @@ const Rutin = () => {
                 <Button
                   type="primary"
                   onClick={() => handleDeleteRutin(rutin.id)}
+                  icon={<DeleteOutlined />}
                 >
                   Delete
                 </Button>,
               ]}
             >
-              
-                  <h3 style={{ width: 170 }}>{rutin.rutins}</h3>
-               
-                  <div style={{ width: 150 }}>
-                    <h5>{rutin.day}</h5>
-                    <p>{rutin.time}</p>
-                  </div>
-               
+              <h3 style={{ width: 170 }}>{rutin.rutins}</h3>
+              <div style={{ width: 150 }}>
+                <h5>{rutin.day}</h5>
+                <p>{rutin.time}</p>
+              </div>
             </List.Item>
           )}
         />

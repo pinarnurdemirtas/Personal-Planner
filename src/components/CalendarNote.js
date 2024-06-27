@@ -1,27 +1,31 @@
 import React, { useState, useEffect, useContext } from "react";
 import { UserContext } from "./UserContext";
-import { Calendar, Badge } from "antd";
+import { Calendar } from "antd";
 import axios from "axios";
-import moment from "moment";
+
 
 const CalendarNote = () => {
+  // Kullanıcı bağlamını kullan
   const { user } = useContext(UserContext);
+
+  // State'ler ve yükleme durumları
   const [rutins, setRutins] = useState([]);
   const [todos, setTodos] = useState([]);
   const [plan, setPlan] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [rutinsLoading, setRutinsLoading] = useState(true);
+  const [todosLoading, setTodosLoading] = useState(true);
+  const [planLoading, setPlanLoading] = useState(true);
 
-  const apiUrlRutins =
-    "https://v1.nocodeapi.com/pnurdemirtas/google_sheets/QhQmclkWghpxvaqH?tabId=sayfa2";
-  const apiUrlTodos =
-    "https://v1.nocodeapi.com/pnurdemirtas/google_sheets/QhQmclkWghpxvaqH?tabId=sayfa3";
-  const apiUrlPlan =
-    "https://v1.nocodeapi.com/pnurdemirtas/google_sheets/QhQmclkWghpxvaqH?tabId=sayfa4";
 
+  const apiUrl =
+    "https://v1.nocodeapi.com/pnurdemirtas/google_sheets/QhQmclkWghpxvaqH";
+
+  // Rutinleri, todos'ları ve planları al
   useEffect(() => {
+    // Rutinleri getir
     const fetchRutins = async () => {
       try {
-        const response = await axios.get(apiUrlRutins);
+        const response = await axios.get(`${apiUrl}?tabId=sayfa2`);
         const filteredRutins = response.data.data
           .filter((rutin) => rutin.username === user.username)
           .map((rutin, index) => ({
@@ -33,16 +37,17 @@ const CalendarNote = () => {
           `rutins_${user.username}`,
           JSON.stringify(filteredRutins)
         );
-        setLoading(false);
+        setRutinsLoading(false);
       } catch (error) {
         console.error("Rutinler getirilirken hata oluştu:", error);
-        setLoading(false);
+        setRutinsLoading(false);
       }
     };
 
+    // Todos'ları getir
     const fetchTodos = async () => {
       try {
-        const response = await axios.get(apiUrlTodos);
+        const response = await axios.get(`${apiUrl}?tabId=sayfa3`);
         const filteredTodos = response.data.data
           .filter((todo) => todo.username === user.username)
           .map((todo, index) => ({
@@ -54,16 +59,17 @@ const CalendarNote = () => {
           `todos_${user.username}`,
           JSON.stringify(filteredTodos)
         );
-        setLoading(false);
+        setTodosLoading(false);
       } catch (error) {
         console.error("Todos getirilirken hata oluştu:", error);
-        setLoading(false);
+        setTodosLoading(false);
       }
     };
 
+    // Planları getir
     const fetchPlan = async () => {
       try {
-        const response = await axios.get(apiUrlPlan);
+        const response = await axios.get(`${apiUrl}?tabId=sayfa4`);
         const filteredPlan = response.data.data
           .filter((plan) => plan.username === user.username)
           .map((plan, index) => ({
@@ -75,20 +81,22 @@ const CalendarNote = () => {
           `plan_${user.username}`,
           JSON.stringify(filteredPlan)
         );
-        setLoading(false);
+        setPlanLoading(false);
       } catch (error) {
-        console.error("Error fetching plans:", error);
-        setLoading(false);
+        console.error("Planlar getirilirken hata oluştu:", error);
+        setPlanLoading(false);
       }
     };
 
+    // Eğer kullanıcı varsa, yerel depodan verileri kontrol et ve gerekirse yeniden getir
     if (user) {
       const storedRutins = JSON.parse(
         localStorage.getItem(`rutins_${user.username}`)
       );
       if (storedRutins) {
+        fetchRutins();
         setRutins(storedRutins);
-        setLoading(false);
+        setRutinsLoading(false);
       } else {
         fetchRutins();
       }
@@ -97,43 +105,47 @@ const CalendarNote = () => {
         localStorage.getItem(`todos_${user.username}`)
       );
       if (storedTodos) {
+        fetchTodos();
         setTodos(storedTodos);
-        setLoading(false);
+        setTodosLoading(false);
       } else {
         fetchTodos();
       }
-      const storedPlans = JSON.parse(
+
+      const storedPlan = JSON.parse(
         localStorage.getItem(`plan_${user.username}`)
       );
-      if (storedPlans) {
-        setPlan(storedPlans);
-        setLoading(false);
+      if (storedPlan) {
+        fetchPlan();
+        setPlan(storedPlan);
+        setPlanLoading(false);
       } else {
         fetchPlan();
       }
     }
   }, [user]);
 
+  // Rutin verilerini döndür
   const getListData = () => {
     if (!rutins.length) return [];
 
-    const listData = rutins.map((rutin) => ({
-      type: "info",
+    return rutins.map((rutin) => ({
+      type: "rutin",
       content: rutin.rutins,
       day: rutin.day,
       time: rutin.time,
     }));
-
-    return listData;
   };
-
+  
+  // Tarih hücresi içeriğini ayarla
   const dateCellRender = (value) => {
     const listData = getListData();
     const updatedListData = [];
 
-    const dayOfWeek = value.format('dddd'); // Get the day of the week (e.g., 'Monday')
+    // Günün hafta içi adını al
+    const dayOfWeek = value.format("dddd");
 
-    // Add rutin events for the current day of the week
+    // Rutinleri gün bazında ekle
     listData.forEach((rutin) => {
       if (rutin.day.toLowerCase() === dayOfWeek.toLowerCase()) {
         updatedListData.push({
@@ -144,7 +156,7 @@ const CalendarNote = () => {
       }
     });
 
-    // Add todos and plans for the specific date
+    // Todos'ları tarihe göre ekle
     todos.forEach((todo) => {
       if (
         value.format("YYYY-MM-DD") >= todo.startDate &&
@@ -157,6 +169,7 @@ const CalendarNote = () => {
       }
     });
 
+    // Planları tarihe göre ekle
     plan.forEach((planItem) => {
       if (value.format("YYYY-MM-DD") === planItem.date) {
         updatedListData.push({
@@ -167,6 +180,7 @@ const CalendarNote = () => {
       }
     });
 
+    // Güncellenmiş veri listesini döndür
     return (
       <ul className="events">
         {updatedListData.map((item, index) => (
@@ -182,7 +196,12 @@ const CalendarNote = () => {
           >
             <span>
               {item.content}
-              {item.time && <><br />{item.time}</>}
+              {item.time && (
+                <>
+                  <br />
+                  {item.time}
+                </>
+              )}
             </span>
           </li>
         ))}
@@ -190,18 +209,21 @@ const CalendarNote = () => {
     );
   };
 
+  // Veri tipine göre arka plan rengi al
   const getBackgroundColor = (type) => {
     switch (type) {
       case "rutin":
-        return "#2db7f5"; // Orange for routines
+        return "#2db7f5"; 
       case "todo":
-        return "#87d068"; // Green for todos
+        return "#87d068"; 
       case "plan":
-        return "#ffa500"; // Blue for plans
+        return "#ffa500"; 
       default:
         return "transparent";
     }
   };
+
+  
 
   return (
     <div className="site-calendar-demo-card">

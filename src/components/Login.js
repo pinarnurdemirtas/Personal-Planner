@@ -19,35 +19,39 @@ import {
   Layout,
   message,
 } from "antd";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; // Router yönlendirmesi için useNavigate hook'unu içe aktar
 
 function Login({ data }) {
   const { Option } = Select;
   const { Header } = Layout;
 
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Router yönlendirme nesnesini al
   const [users, setUsers] = useState([]);
-  const { setUser } = useContext(UserContext);
-  const [isRegistering, setIsRegistering] = useState(false); // New state variable
+  const { setUser } = useContext(UserContext); // usercontext ten setUser fonksiyonunu al
+  const [isRegistering, setIsRegistering] = useState(false); // kayıt için state değişkeni tanımla
 
+  // Başarılı form gönderimi işlevi
   const onFinish = (values) => {
-    console.log("Success:", values);
+    // Kullanıcı verileri doğru mu
     const isValidUser = data.some(
       (user) =>
         user.username === values.username && user.password === values.password
     );
     if (isValidUser) {
-      setUser(values);
-      navigate("/homepage");
+      setUser(values); // Kullanıcıyı usercontexte ver
+      navigate("/homepage"); // Ana sayfaya yönlendirin
+      message.success("Login successful");
     } else {
-      message.error("Incorrect password or username");
+      message.error("Incorrect password or username"); // Hata mesajı göster
     }
   };
 
+  // Başarısız form gönderimi işlevi
   const onFinishFailed = (errorInfo) => {
     console.log("Failed:", errorInfo);
   };
 
+  // Kayıt işlevi
   const register = async (values) => {
     const user = {
       username: values.username,
@@ -59,16 +63,17 @@ function Login({ data }) {
       gender: values.gender,
     };
     try {
+      // Axios ile kullanıcıyı bir API'ye post et
       const response = await axios.post(
         "https://v1.nocodeapi.com/pnurdemirtas/google_sheets/QhQmclkWghpxvaqH?tabId=sayfa1",
         [Object.values(user)]
       );
 
-      const updatedUsers = [...users, { ...user }];
-      setUsers(updatedUsers);
-      window.location.reload();
+      const updatedUsers = [...users, { ...user }]; //users adlı bir dizinin içine, user adlı bir nesneyi ekle
+      setUsers(updatedUsers); //usersları güncelle
+      window.location.reload(); // Sayfayı yeniden yükle
     } catch (error) {
-      console.error("Error adding rutin:", error.response);
+      console.error("Error adding rutin:", error.response); // Hata mesajı göster
     }
   };
 
@@ -122,7 +127,7 @@ function Login({ data }) {
                   color: "white",
                 }}
               >
-                {isRegistering ? (
+                {isRegistering ? ( //isRegistering aktif olduğunda refister formu açılsın
                   <Form
                     style={{ paddingTop: 12 }}
                     name="register"
@@ -271,6 +276,7 @@ function Login({ data }) {
                     </Form.Item>
                   </Form>
                 ) : (
+                  //isRegistering aktif değilse login formu çalışsın
                   <Form
                     style={{ paddingTop: 15 }}
                     name="normal_login"
@@ -325,7 +331,7 @@ function Login({ data }) {
                         </Checkbox>
                       </Form.Item>
                       <div style={{ paddingTop: 15 }}>
-                        <a href="">Forgot password</a>
+                        <a href="/">Forgot password</a>
                       </div>
                     </Form.Item>
                     <Form.Item
@@ -338,7 +344,6 @@ function Login({ data }) {
                       <Button
                         type="primary"
                         htmlType="submit"
-                        className="purple-button"
                         style={{ width: 200 }}
                       >
                         Log in

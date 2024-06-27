@@ -3,12 +3,10 @@ import { Button } from "antd";
 import { useNavigate } from "react-router-dom";
 
 function Logout() {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); //yönlendirme için navigate tanımla
 
   const handleLogout = () => {
-    console.log("Log out butonuna tıklandı."); // Buton tıklanması kontrolü
-    // Kullanıcıyı /login sayfasına yönlendir
-    navigate("/");
+    navigate("/");   // Kullanıcıyı login sayfasına yönlendir
   };
 
   return (
