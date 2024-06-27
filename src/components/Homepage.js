@@ -8,7 +8,7 @@ import {
   HomeOutlined,
   FolderOutlined,
 } from "@ant-design/icons";
-import { Breadcrumb, Layout, Menu, theme } from "antd";
+import { Layout, Menu, theme } from "antd";
 import Profile from "./Profile";
 import Plan from "./Plan";
 import TodoList from "./TodoList";
@@ -91,7 +91,7 @@ const Homepage = ({ data }) => {
       </Sider>
       <Layout>
         <Content style={{ margin: "10px 15px" }}>
-          <Breadcrumb style={{ margin: "5px 0" }} />
+        
           <div
             style={{
               padding: 24,

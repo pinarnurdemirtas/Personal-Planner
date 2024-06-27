@@ -35,6 +35,7 @@ console.log(validUsers);
 
 
   return (
+    //Kullanıcı bilgilerini tüm bileşenlere verir
     <UserProvider>
       <Router>
         <Routes>
@@ -48,7 +49,7 @@ console.log(validUsers);
           <Route path="/Logout" element={<Logout data={validUsers}/>} />
         </Routes>
       </Router>
-    </UserProvider> //Kullanıcı bilgilerini tüm bileşenlere verir
+    </UserProvider> 
   ); 
 };
 
